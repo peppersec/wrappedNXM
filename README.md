@@ -1,7 +1,9 @@
-# solidity-typescript-template
+# Wrapped NXM
 
-[![Build Status](https://travis-ci.com/ilyakmet/solidity-typescript-template.svg?branch=master)](https://travis-ci.com/ilyakmet/solidity-typescript-template)
-[![codecov](https://codecov.io/gh/ilyakmet/solidity-typescript-template/branch/master/graph/badge.svg)](https://codecov.io/gh/ilyakmet/solidity-typescript-template)
+Describes the technical specifications to turn NXM into wNXM, a freely tradable ERC-20.  
+## Objectives
+Allow anyone, not just members of Nexus Mutual, to get direct exposure to NXM.  
+Do so in a trustless way.  
 
 ## Developer Tools 🛠️
 
@@ -23,12 +25,6 @@ $ yarn install
 $ yarn test
 ```
 
-## Coverage
-
-```bash
-$ yarn coverage
-```
-
 ## Deploying
 
 Deploy to Kovan:
@@ -40,5 +36,5 @@ $ NETWORK=kovan yarn deploy
 ## Verifying Contract Code
 
 ```bash
-$ NETWORK=kovan yarn run verify YourContractName
+$ NETWORK=kovan yarn run verify wrappedNXM
 ```
