@@ -1,71 +1,34 @@
-import { NxmTokenInstance } from '../types/truffle-contracts';
-
-const BN = require('bn.js');
-const chai = require('chai');
-const { expect } = require('chai');
+import { NxmTokenInstance, WNxmInstance } from '../types/truffle-contracts';
 const NXMToken = artifacts.require('NXMToken');
+const wNXMToken = artifacts.require('wNXM');
 
+import chai from 'chai';
+const { expect } = require('chai');
+const BN = require('bn.js');
 chai.use(require('chai-bn')(BN));
+chai.use(require('chai-as-promised'));
+chai.should();
 
 contract('NXMToken', (accounts) => {
-  let nxmCoin: NxmTokenInstance;
-  const initialSupply = web3.utils.toWei('1000', 'ether')
+  let NXM: NxmTokenInstance;
+  let wNXM: WNxmInstance;
+  const operator = accounts[0];
+  const member = accounts[1];
 
-  beforeEach(async () => {
-    nxmCoin = await NXMToken.new(accounts[0], initialSupply);
+  before(async () => {
+    NXM = await NXMToken.deployed();
+    wNXM = await wNXMToken.deployed();
   });
 
   it('check NXM', async () => {
-    const balance = await nxmCoin.totalSupply();
-    const isWhitelisted = await nxmCoin.whiteListed(accounts[0])
-    await nxmCoin.changeOperator(accounts[0])
-    const operator = await nxmCoin.operator()
+    const operatorFromContract = await NXM.operator();
+    operatorFromContract.should.be.equal(operator);
 
-    expect(balance.valueOf()).to.be.a.bignumber.that.equals(new BN(initialSupply));
+    const totalSupply = await NXM.totalSupply();
+    const operatorBalance = await NXM.balanceOf(operator);
+    expect(totalSupply).to.be.a.bignumber.that.equals(operatorBalance);
+
+    const isWhitelisted = await NXM.whiteListed(member);
+    isWhitelisted.should.be.true;
   });
-
-  // it('should call a function that depends on a linked library', async () => {
-  //   const metaCoinBalance = await metaCoinInstance.getBalance(accounts[0]);
-
-  //   const metaCoinEthBalance = await metaCoinInstance.getBalanceInEth(
-  //     accounts[0],
-  //   );
-
-  //   expect(metaCoinEthBalance).to.be.a.bignumber.that.equals(
-  //     new BN(metaCoinBalance).mul(new BN('2')),
-  //   );
-  // });
-
-  // it('should send coin correctly', async () => {
-  //   // Setup 2 accounts.
-  //   const [accountOne, accountTwo] = accounts;
-
-  //   // Get initial balances of first and second account.
-  //   const accountOneStartingBalance = await metaCoinInstance.getBalance(
-  //     accountOne,
-  //   );
-  //   const accountTwoStartingBalance = await metaCoinInstance.getBalance(
-  //     accountTwo,
-  //   );
-
-  //   // Make transaction from first account to second.
-  //   const amount = 10;
-  //   await metaCoinInstance.sendCoin(accountTwo, amount, { from: accountOne });
-
-  //   // Get balances of first and second account after the transactions.
-  //   const accountOneEndingBalance = await metaCoinInstance.getBalance(
-  //     accountOne,
-  //   );
-  //   const accountTwoEndingBalance = await metaCoinInstance.getBalance(
-  //     accountTwo,
-  //   );
-
-  //   expect(accountOneEndingBalance).to.be.a.bignumber.that.equals(
-  //     new BN(accountOneStartingBalance).sub(new BN(amount)),
-  //   );
-
-  //   expect(accountTwoEndingBalance).to.be.a.bignumber.that.equals(
-  //     new BN(accountTwoStartingBalance).add(new BN(amount)),
-  //   );
-  // });
 });
