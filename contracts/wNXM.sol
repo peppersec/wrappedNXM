@@ -57,22 +57,22 @@ contract wNXM is ERC20, ERC20Detailed {
         require(NXM.transfer(_to, _amount), "wNXM: transfer failed");
     }
 
-    function canWrap(uint256 _amount, address _owner)
+    function canWrap(address _owner, uint256 _amount)
         public
         view
-        returns (bool, string memory)
+        returns (bool success, string memory reason)
     {
         bool isAllowed = NXM.allowance(_owner, address(this)) >= _amount;
         bool hasBalance = NXM.balanceOf(_owner) >= _amount;
-        bool isLockedForMV = NXM.isLockedForMV(msg.sender) < now;
-        bool isWhitelisted = NXM.whiteListed(msg.sender);
+        bool isLockedForMV = NXM.isLockedForMV(_owner) < now;
+        bool isWhitelisted = NXM.whiteListed(_owner);
         if (!isAllowed) {
             return (false, "insufficient allowance");
         }
         if (!hasBalance) {
             return (false, "insufficient NXM balance");
         }
-        if (isLockedForMV) {
+        if (!isLockedForMV) {
             return (false, "NXM balance lockedForMv");
         }
         if (!isWhitelisted) {
@@ -84,7 +84,7 @@ contract wNXM is ERC20, ERC20Detailed {
     function canUnwrap(address _owner, address _recipient, uint256 _amount)
         public
         view
-        returns (bool, string memory)
+        returns (bool success, string memory reason)
     {
         bool hasBalance = balanceOf(_owner) >= _amount;
         bool isWhitelisted = NXM.whiteListed(_recipient);
