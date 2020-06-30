@@ -20,7 +20,7 @@ contract wNXM is ERC20, ERC20Detailed {
     bytes32 public constant PERMIT_TYPEHASH = 0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
     mapping(address => uint256) public nonces;
 
-    constructor(INXM _nxm) public ERC20Detailed("wrapped NXM", "wNXM", 18) {
+    constructor(INXM _nxm) public ERC20Detailed("Wrapped NXM", "wNXM", 18) {
         NXM = _nxm;
         uint256 chainId;
         assembly {
@@ -52,7 +52,7 @@ contract wNXM is ERC20, ERC20Detailed {
         require(NXM.transfer(msg.sender, _amount), "wNXM: transfer failed");
     }
 
-    function unwrapAndTransfer(uint256 _amount, address _to) external {
+    function unwrapTo(uint256 _amount, address _to) external {
         _burn(msg.sender, _amount);
         require(NXM.transfer(_to, _amount), "wNXM: transfer failed");
     }
@@ -62,22 +62,22 @@ contract wNXM is ERC20, ERC20Detailed {
         view
         returns (bool success, string memory reason)
     {
-        bool isAllowed = NXM.allowance(_owner, address(this)) >= _amount;
-        bool hasBalance = NXM.balanceOf(_owner) >= _amount;
-        bool isLockedForMV = NXM.isLockedForMV(_owner) < now;
-        bool isWhitelisted = NXM.whiteListed(address(this));
-        if (!isAllowed) {
+        if (NXM.allowance(_owner, address(this)) < _amount) {
             return (false, "insufficient allowance");
         }
-        if (!hasBalance) {
+
+        if (NXM.balanceOf(_owner) < _amount) {
             return (false, "insufficient NXM balance");
         }
-        if (!isLockedForMV) {
+
+        if (NXM.isLockedForMV(_owner) > now) {
             return (false, "NXM balance lockedForMv");
         }
-        if (!isWhitelisted) {
+
+        if (!NXM.whiteListed(address(this))) {
             return (false, "wNXM is not whitelisted");
         }
+
         return (true, "");
     }
 
@@ -86,16 +86,13 @@ contract wNXM is ERC20, ERC20Detailed {
         view
         returns (bool success, string memory reason)
     {
-        bool hasBalance = balanceOf(_owner) >= _amount;
-        bool isWhitelisted = NXM.whiteListed(_recipient);
-        bool isLockedForMV = NXM.isLockedForMV(address(this)) < now;
-        if (!hasBalance) {
+        if (balanceOf(_owner) < _amount) {
             return (false, "insufficient wNXM balance");
         }
-        if (!isWhitelisted) {
+        if (!NXM.whiteListed(_recipient)) {
             return (false, "recipient is not whitelisted");
         }
-        if (!isLockedForMV) {
+        if (NXM.isLockedForMV(address(this)) > now) {
             return (false, "wNXM is lockedForMv");
         }
         return (true, "");

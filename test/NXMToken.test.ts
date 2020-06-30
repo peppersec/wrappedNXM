@@ -208,7 +208,7 @@ contract('wNXM', (accounts) => {
 
   });
 
-  describe('#unwrapAndTransfer', () => {
+  describe('#unwrapTo', () => {
     it('should work', async () => {
       const recipient = accounts[4];
       await NXM.addToWhiteList(recipient);
@@ -224,7 +224,7 @@ contract('wNXM', (accounts) => {
       canUnwrap['0'].should.be.true; // success
       canUnwrap['1'].should.be.equal(''); // reason
 
-      await wNXM.unwrapAndTransfer(amountToWrap, recipient, { from: member });
+      await wNXM.unwrapTo(amountToWrap, recipient, { from: member });
 
       const wNXMBalanceAfter = await wNXM.balanceOf(member);
       const NXMBalanceAfter = await NXM.balanceOf(recipient);
