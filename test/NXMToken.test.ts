@@ -33,6 +33,7 @@ contract('wNXM', (accounts) => {
     await NXM.transfer(member, memberAmount, { from: operator });
     await NXM.addToWhiteList(wNXM.address);
     await wNXM.setChainId(chainId);
+    await wNXM.setFaketimestamp(1593557281); // 06/30/2020 @ 10:48pm (UTC)
     snapshotId = await takeSnapshot();
     domain = {
       name: await wNXM.name(),
@@ -303,24 +304,74 @@ contract('wNXM', (accounts) => {
         { from: operator }
       );
       const allowanceAfter = await wNXM.allowance(operator, member);
-      console.log('allowanceAfter', allowanceAfter.toString());
 
       expect(allowanceAfter).to.be.a.bignumber.that.equals(
         BN(allowanceBefore).add(args.value)
       );
     });
-    it('reverts if signature is corrupted');
-    it('reverts if signature is expired');
-  });
+    it('reverts if signature is corrupted', async () => {
+      const chainIdFromContract = await wNXM.chainId();
+      expect(chainIdFromContract).to.be.a.bignumber.that.equals(
+        new BN(domain.chainId)
+      );
+      const args: PermitArgs = {
+        owner: operator,
+        spender: member,
+        value: memberAmount,
+        nonce: 0,
+        deadline: new BN('1594525063') // 07/12/2020 @ 3:37am (UTC)
+      };
+      const permitSigner = new PermitSigner(domain, args);
+      const signature = await permitSigner.getSignature(operatorPrivateKey);
+      signature.r = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+      const allowanceBefore = await wNXM.allowance(operator, member);
+      await expectRevert(wNXM.permit(
+        args.owner,
+        args.spender,
+        args.value.toString(),
+        args.deadline.toString(),
+        signature.v,
+        signature.r,
+        signature.s,
+        { from: operator }
+      ), 'ECDSA: invalid signature');
+      const allowanceAfter = await wNXM.allowance(operator, member);
 
-  describe('#claimTokens', () => {
-    it('withdraws arbitrary erc20');
-    it('reverts if NXM token is specified');
-    it('reverts if wNXM token is specified');
-  });
+      expect(allowanceAfter).to.be.a.bignumber.that.equals(
+        BN(allowanceBefore)
+      );
+    });
+    it('reverts if signature is expired', async () => {
+      const chainIdFromContract = await wNXM.chainId();
+      expect(chainIdFromContract).to.be.a.bignumber.that.equals(
+        new BN(domain.chainId)
+      );
+      const args: PermitArgs = {
+        owner: operator,
+        spender: member,
+        value: memberAmount,
+        nonce: 0,
+        deadline: new BN('1593388800') // 06/29/2020 @ 12:00am (UTC)
+      };
+      const permitSigner = new PermitSigner(domain, args);
+      const signature = await permitSigner.getSignature(operatorPrivateKey);
+      const allowanceBefore = await wNXM.allowance(operator, member);
+      await expectRevert(wNXM.permit(
+        args.owner,
+        args.spender,
+        args.value.toString(),
+        args.deadline.toString(),
+        signature.v,
+        signature.r,
+        signature.s,
+        { from: operator }
+      ), 'ERC20Permit: expired deadline');
+      const allowanceAfter = await wNXM.allowance(operator, member);
 
-  describe('#transferAndCall', () => {
-    it('should work');
+      expect(allowanceAfter).to.be.a.bignumber.that.equals(
+        BN(allowanceBefore)
+      );
+    });
   });
 
   afterEach(async () => {

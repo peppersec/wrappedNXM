@@ -14,12 +14,7 @@ contract wNXM is ERC20, ERC20Detailed, ERC20Permit, Ownable {
     using SafeERC20 for ERC20;
     using SafeMath for uint256;
 
-    event Transfer(
-        address indexed from,
-        address indexed to,
-        uint256 value,
-        bytes data
-    );
+    event Transfer(address indexed from, address indexed to, uint256 value, bytes data);
 
     INXM public NXM;
 
@@ -28,19 +23,15 @@ contract wNXM is ERC20, ERC20Detailed, ERC20Permit, Ownable {
     }
 
     function wrap(uint256 _amount) external {
-        require(
-            NXM.transferFrom(msg.sender, address(this), _amount),
-            "wNXM: transferFrom failed"
-        );
+        require(NXM.transferFrom(msg.sender, address(this), _amount), "wNXM: transferFrom failed");
         _mint(msg.sender, _amount);
     }
 
     function unwrap(uint256 _amount) external {
-        _burn(msg.sender, _amount);
-        require(NXM.transfer(msg.sender, _amount), "wNXM: transfer failed");
+        unwrapTo(_amount, msg.sender);
     }
 
-    function unwrapTo(uint256 _amount, address _to) external {
+    function unwrapTo(uint256 _amount, address _to) public {
         _burn(msg.sender, _amount);
         require(NXM.transfer(_to, _amount), "wNXM: transfer failed");
     }
@@ -87,24 +78,5 @@ contract wNXM is ERC20, ERC20Detailed, ERC20Permit, Ownable {
         }
 
         return (true, "");
-    }
-    /// @dev Method to claim junk and accidentally sent tokens
-    function claimTokens(ERC20 _token, address payable _to, uint256 _balance)
-        external onlyOwner
-    {
-        require(_to != address(0), "wNXM: can not send to zero address");
-
-        if (_token == ERC20(address(NXM))) {
-            uint overageBalance = _token.balanceOf(address(this)).sub(totalSupply());
-            require(overageBalance > 0, "wNXM: there is no accidentally sent NXM");
-            uint balance = _balance == 0 ? overageBalance : Math.min(overageBalance, _balance);
-            _token.safeTransfer(_to, balance);
-        } else if (_token == ERC20(0)) { // for Ether
-            uint balance = _balance == 0 ? address(this).balance : _balance;
-            _to.transfer(balance);
-        } else { // any other erc20 including wNXM
-            uint balance = _balance == 0 ? _token.balanceOf(address(this)) : _balance;
-            _token.safeTransfer(_to, balance);
-        }
     }
 }
