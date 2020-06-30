@@ -208,6 +208,53 @@ contract('wNXM', (accounts) => {
 
   });
 
+  describe('#unwrapAndTransfer', () => {
+    it('should work', async () => {
+      const recipient = accounts[4];
+      await NXM.addToWhiteList(recipient);
+      const amountToWrap = memberAmount.div(new BN('2'));
+
+      await NXM.approve(wNXM.address, amountToWrap, { from: member });
+      await wNXM.wrap(amountToWrap, { from: member });
+
+      const wNXMBalanceBefore = await wNXM.balanceOf(member);
+      const NXMBalanceBefore = await NXM.balanceOf(recipient);
+
+      const canUnwrap = await wNXM.canUnwrap(member, recipient, amountToWrap);
+      canUnwrap['0'].should.be.true; // success
+      canUnwrap['1'].should.be.equal(''); // reason
+
+      await wNXM.unwrapAndTransfer(amountToWrap, recipient, { from: member });
+
+      const wNXMBalanceAfter = await wNXM.balanceOf(member);
+      const NXMBalanceAfter = await NXM.balanceOf(recipient);
+
+      expect(wNXMBalanceAfter).to.be.a.bignumber.that.equals(
+        BN(wNXMBalanceBefore).sub(amountToWrap)
+      );
+
+      expect(NXMBalanceAfter).to.be.a.bignumber.that.equals(
+        BN(NXMBalanceBefore).add(amountToWrap)
+      );
+    });
+  });
+
+  describe('#permit', () => {
+    it('calls approve if signature is valid');
+    it('reverts if signature is corrupted');
+    it('reverts if signature is expired');
+  });
+
+  describe('#claimTokens', () => {
+    it('withdraws arbitrary erc20');
+    it('reverts if NXM token is specified');
+    it('reverts if wNXM token is specified');
+  });
+
+  describe('#transferAndCall', () => {
+    it('should work');
+  });
+
   afterEach(async () => {
     await revertSnapshot(snapshotId.result);
     snapshotId = await takeSnapshot();

@@ -8,6 +8,7 @@ module.exports = function (deployer, network, accounts) {
     const NXM = await deployer.deploy(NXMToken, operator, initialSupply);
 
     await NXM.changeOperator(operator)
+    await NXM.addToWhiteList(operator)
     await NXM.addToWhiteList(member)
   })
 };
