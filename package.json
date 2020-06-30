@@ -10,15 +10,17 @@
   "scripts": {
     "compile": "npx truffle compile && npx typechain --target truffle './build/**/*.json'",
     "coverage": "yarn compile && npx truffle run coverage",
-    "test": "yarn compile && npx truffle test",
+    "test": "yarn compile && ./test.sh",
     "deploy": "truffle migrate --skipDryRun --network $NETWORK",
     "verify": "truffle run verify --network $NETWORK"
   },
   "devDependencies": {
+    "@ticket721/e712": "^0.4.1",
     "bn.js": "^5.1.2",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-bn": "^0.2.1",
+    "ganache-cli": "^6.10.0-beta.2",
     "prettier": "^2.0.5",
     "prettier-plugin-solidity": "^1.0.0-alpha.54",
     "solhint-plugin-prettier": "^0.0.4",
@@ -33,10 +35,10 @@
     "tslint-config-standard": "^9.0.0",
     "typechain": "^2.0.0",
     "typechain-target-truffle": "^1.0.2",
-    "typescript": "^3.9.5"
+    "typescript": "^3.9.5",
+    "@openzeppelin/test-helpers": "^0.5.6"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^2.5.1",
-    "@openzeppelin/test-helpers": "^0.5.6"
+    "@openzeppelin/contracts": "^2.5.1"
   }
 }
