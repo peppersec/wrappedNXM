@@ -21,7 +21,7 @@ contract wNXMMock is wNXM {
         fakeTimestamp = _fakeTimestamp;
     }
 
-    function timestamp() public view returns (uint256) {
+    function blockTimestamp() public view returns (uint256) {
         return fakeTimestamp;
     }
 }

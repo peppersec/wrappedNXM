@@ -46,7 +46,7 @@ contract ERC20Permit is ERC20, ERC20Detailed {
         bytes32 r,
         bytes32 s
     ) public {
-        require(timestamp() <= deadline, "ERC20Permit: expired deadline");
+        require(blockTimestamp() <= deadline, "ERC20Permit: expired deadline");
 
         bytes32 hashStruct = keccak256(
             abi.encode(_PERMIT_TYPEHASH, owner, spender, amount, _nonces[owner], deadline)
@@ -98,13 +98,13 @@ contract ERC20Permit is ERC20, ERC20Detailed {
         }
     }
 
-    function chainID() public view returns (uint256 chainID) {
+    function chainID() public view returns (uint256 _chainID) {
         assembly {
-            chainID := chainid()
+            _chainID := chainid()
         }
     }
 
-    function timestamp() public view returns (uint256) {
+    function blockTimestamp() public view returns (uint256) {
         return block.timestamp;
     }
 }
