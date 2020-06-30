@@ -2,16 +2,13 @@ pragma solidity 0.5.17;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Detailed.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/math/Math.sol";
-import "@openzeppelin/contracts/ownership/Ownable.sol";
 import "./INXM.sol";
 import "./ERC20Permit.sol";
 
 
-contract wNXM is ERC20, ERC20Detailed, ERC20Permit, Ownable {
-    using SafeERC20 for ERC20;
+contract wNXM is ERC20, ERC20Detailed, ERC20Permit {
     using SafeMath for uint256;
 
     event Transfer(address indexed from, address indexed to, uint256 value, bytes data);
