@@ -10,8 +10,6 @@ import "./ERC20Permit.sol";
 contract wNXM is ERC20, ERC20Detailed, ERC20Permit {
     using SafeMath for uint256;
 
-    event Transfer(address indexed from, address indexed to, uint256 value, bytes data);
-
     INXM public NXM;
 
     constructor(INXM _nxm) public ERC20Detailed("Wrapped NXM", "wNXM", 18) {

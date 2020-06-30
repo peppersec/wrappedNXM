@@ -98,12 +98,10 @@ contract ERC20Permit is ERC20, ERC20Detailed {
         }
     }
 
-    function chainID() public view returns (uint256) {
-        uint256 _chainID;
+    function chainID() public view returns (uint256 chainID) {
         assembly {
-            _chainID := chainid()
+            chainID := chainid()
         }
-        return _chainID;
     }
 
     function timestamp() public view returns (uint256) {
