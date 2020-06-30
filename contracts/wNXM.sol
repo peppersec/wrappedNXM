@@ -89,12 +89,15 @@ contract wNXM is ERC20, ERC20Detailed {
         if (balanceOf(_owner) < _amount) {
             return (false, "insufficient wNXM balance");
         }
+
         if (!NXM.whiteListed(_recipient)) {
             return (false, "recipient is not whitelisted");
         }
+
         if (NXM.isLockedForMV(address(this)) > now) {
             return (false, "wNXM is lockedForMv");
         }
+
         return (true, "");
     }
 
