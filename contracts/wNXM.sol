@@ -65,7 +65,7 @@ contract wNXM is ERC20, ERC20Detailed {
         bool isAllowed = NXM.allowance(_owner, address(this)) >= _amount;
         bool hasBalance = NXM.balanceOf(_owner) >= _amount;
         bool isLockedForMV = NXM.isLockedForMV(_owner) < now;
-        bool isWhitelisted = NXM.whiteListed(_owner);
+        bool isWhitelisted = NXM.whiteListed(address(this));
         if (!isAllowed) {
             return (false, "insufficient allowance");
         }
@@ -76,7 +76,7 @@ contract wNXM is ERC20, ERC20Detailed {
             return (false, "NXM balance lockedForMv");
         }
         if (!isWhitelisted) {
-            return (false, "owner is not whitelisted");
+            return (false, "wNXM is not whitelisted");
         }
         return (true, "");
     }
@@ -88,11 +88,15 @@ contract wNXM is ERC20, ERC20Detailed {
     {
         bool hasBalance = balanceOf(_owner) >= _amount;
         bool isWhitelisted = NXM.whiteListed(_recipient);
+        bool isLockedForMV = NXM.isLockedForMV(address(this)) < now;
         if (!hasBalance) {
-            return (false, "insufficient NXM balance");
+            return (false, "insufficient wNXM balance");
         }
         if (!isWhitelisted) {
             return (false, "recipient is not whitelisted");
+        }
+        if (!isLockedForMV) {
+            return (false, "wNXM is lockedForMv");
         }
         return (true, "");
     }
