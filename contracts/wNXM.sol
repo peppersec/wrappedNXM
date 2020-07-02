@@ -45,7 +45,7 @@ contract wNXM is ERC20, ERC20Detailed, ERC20Permit {
         unwrapTo(msg.sender, _amount);
     }
 
-    function unwrapTo(address _to, uint256 _amount) public {
+    function unwrapTo(address _to, uint256 _amount) public notwNXM(_to) {
         _burn(msg.sender, _amount);
         require(NXM.transfer(_to, _amount), "wNXM: transfer failed");
     }
