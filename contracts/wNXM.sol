@@ -24,16 +24,11 @@ contract wNXM is ERC20, ERC20Detailed, ERC20Permit {
         NXM = _nxm;
     }
 
-    function transfer(address recipient, uint256 amount) public notwNXM(recipient) returns (bool) {
-        return super.transfer(recipient, amount);
-    }
-
-    function transferFrom(address sender, address recipient, uint256 amount)
-        public
+    function _transfer(address sender, address recipient, uint256 amount)
+        internal
         notwNXM(recipient)
-        returns (bool)
     {
-        return super.transferFrom(sender, recipient, amount);
+        super._transfer(sender, recipient, amount);
     }
 
     function wrap(uint256 _amount) external {
@@ -112,6 +107,7 @@ contract wNXM is ERC20, ERC20Detailed, ERC20Permit {
             // any other erc20
             uint256 totalBalance = _token.balanceOf(address(this));
             uint256 balance = _balance == 0 ? totalBalance : Math.min(totalBalance, _balance);
+            require(balance > 0, "wNXM: trying to send 0 balance");
             _token.safeTransfer(_to, balance);
         }
     }
