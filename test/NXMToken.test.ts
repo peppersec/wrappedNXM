@@ -239,7 +239,7 @@ contract('wNXM', (accounts) => {
       canUnwrap['0'].should.be.true; // success
       canUnwrap['1'].should.be.equal(''); // reason
 
-      await wNXM.unwrapTo(amountToWrap, recipient, { from: member });
+      await wNXM.unwrapTo(recipient, amountToWrap, { from: member });
 
       const wNXMBalanceAfter = await wNXM.balanceOf(member);
       const NXMBalanceAfter = await NXM.balanceOf(recipient);

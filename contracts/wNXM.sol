@@ -16,20 +16,24 @@ contract wNXM is ERC20, ERC20Detailed, ERC20Permit {
     INXM public NXM;
 
     modifier notwNXM(address recipient) {
-      require(recipient != address(this), "wNXM: can not send to self");
-      _;
+        require(recipient != address(this), "wNXM: can not send to self");
+        _;
     }
 
     constructor(INXM _nxm) public ERC20Detailed("Wrapped NXM", "wNXM", 18) {
         NXM = _nxm;
     }
 
-    function transfer(address recipient, uint256 amount) notwNXM(recipient) public returns (bool) { 
-      return super.transfer(recipient, amount);
+    function transfer(address recipient, uint256 amount) public notwNXM(recipient) returns (bool) {
+        return super.transfer(recipient, amount);
     }
 
-    function transferFrom(address sender, address recipient, uint256 amount) notwNXM(recipient) public returns (bool) { 
-      return super.transferFrom(sender, recipient, amount);
+    function transferFrom(address sender, address recipient, uint256 amount)
+        public
+        notwNXM(recipient)
+        returns (bool)
+    {
+        return super.transferFrom(sender, recipient, amount);
     }
 
     function wrap(uint256 _amount) external {
@@ -38,10 +42,10 @@ contract wNXM is ERC20, ERC20Detailed, ERC20Permit {
     }
 
     function unwrap(uint256 _amount) external {
-        unwrapTo(_amount, msg.sender);
+        unwrapTo(msg.sender, _amount);
     }
 
-    function unwrapTo(uint256 _amount, address _to) public {
+    function unwrapTo(address _to, uint256 _amount) public {
         _burn(msg.sender, _amount);
         require(NXM.transfer(_to, _amount), "wNXM: transfer failed");
     }
