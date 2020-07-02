@@ -105,12 +105,11 @@ contract wNXM is ERC20, ERC20Detailed, ERC20Permit {
             _token.safeTransfer(_to, balance);
         } else if (_token == ERC20(0)) {
             // for Ether
-            uint256 balance = _balance == 0
-                ? address(this).balance
-                : Math.min(address(this).balance, _balance);
+            uint256 totalBalance = address(this).balance;
+            uint256 balance = _balance == 0 ? totalBalance : Math.min(totalBalance, _balance);
             _to.transfer(balance);
         } else {
-            // any other erc20 including wNXM
+            // any other erc20
             uint256 totalBalance = _token.balanceOf(address(this));
             uint256 balance = _balance == 0 ? totalBalance : Math.min(totalBalance, _balance);
             _token.safeTransfer(_to, balance);
