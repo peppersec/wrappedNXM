@@ -1,13 +1,14 @@
 import { takeSnapshot, revertSnapshot } from '../lib/ganacheHelper';
-import { NxmTokenInstance, WNxmMockInstance } from '../types/truffle-contracts';
+import { NxmTokenInstance, WNxmMockInstance, DummyTokenInstance } from '../types/truffle-contracts';
 import { PermitSigner, PermitArgs } from '../lib/Permit';
 import { EIP712Domain } from '@ticket721/e712';
 const NXMToken = artifacts.require('NXMToken');
 const wNXMMock = artifacts.require('wNXMMock');
+const DummyToken = artifacts.require('DummyToken');
 
 import chai from 'chai';
 const { expect } = require('chai');
-const { expectRevert } = require('@openzeppelin/test-helpers');
+const { expectRevert, expectEvent } = require('@openzeppelin/test-helpers');
 const BN = require('bn.js');
 chai.use(require('chai-bn')(BN));
 chai.use(require('chai-as-promised'));
@@ -371,6 +372,60 @@ contract('wNXM', (accounts) => {
       expect(allowanceAfter).to.be.a.bignumber.that.equals(
         BN(allowanceBefore)
       );
+    });
+  });
+
+  describe('#claimTokens', () => {
+    it('withdraws arbitrary erc20', async () => {
+      const amountToSend = web3.utils.toWei('20', 'ether');
+      const totalSupply = web3.utils.toWei('100', 'ether');
+      const recipient = accounts[4];
+      const arbitraryAddress = accounts[5];
+      const dummyToken = await DummyToken.new({ from: member });
+      const balanceBefore = await dummyToken.balanceOf(member);
+      expect(balanceBefore).to.be.bignumber.equals(
+        new BN(totalSupply)
+      );
+      await dummyToken.transfer(wNXM.address, amountToSend, { from: member });
+
+      await wNXM.claimTokens(dummyToken.address, recipient, amountToSend, { from: arbitraryAddress });
+      const balanceRecipient = await dummyToken.balanceOf(recipient);
+      expect(balanceRecipient).to.be.bignumber.equal(
+        new BN(amountToSend)
+      );
+    });
+    it('allows to withdraw excess of NXM token', async () => {
+      const amountToWrap = web3.utils.toWei('2', 'ether');
+
+      await NXM.approve(wNXM.address, amountToWrap, { from: member });
+      await wNXM.wrap(amountToWrap, { from: member });
+      const amountToSend = web3.utils.toWei('20', 'ether');
+      const totalSupply = web3.utils.toWei('100', 'ether');
+      const recipient = accounts[4];
+      const arbitraryAddress = accounts[5];
+      await NXM.transfer(wNXM.address, amountToSend, { from: operator });
+      const balanceBefore = await NXM.balanceOf(wNXM.address);
+      expect(balanceBefore).to.be.bignumber.equals(
+        new BN(amountToSend).add(new BN(amountToWrap))
+      );
+
+      await NXM.addToWhiteList(recipient);
+      await wNXM.claimTokens(NXM.address, recipient, amountToSend, { from: arbitraryAddress });
+      const balanceRecipient = await NXM.balanceOf(recipient);
+      expect(balanceRecipient).to.be.bignumber.equal(
+        new BN(amountToSend)
+      );
+      await expectRevert(wNXM.claimTokens(NXM.address, recipient, '1', { from: arbitraryAddress }), 'wNXM: there is no accidentally sent NXM');
+    });
+  });
+
+  describe('#transfer', () => {
+    it('#restricts sending to wNXM', async () => {
+      const amountToWrap = web3.utils.toWei('2', 'ether');
+      await NXM.approve(wNXM.address, amountToWrap, { from: member });
+      await wNXM.wrap(amountToWrap, { from: member });
+      await expectRevert(wNXM.transfer(wNXM.address, amountToWrap, { from: member }), 'wNXM: can not send to self');
+      await wNXM.transfer(accounts[5], amountToWrap, { from: member });
     });
   });
 
