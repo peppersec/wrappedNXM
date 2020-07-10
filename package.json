@@ -15,6 +15,7 @@
     "verify": "truffle run verify --network $NETWORK"
   },
   "devDependencies": {
+    "@openzeppelin/test-helpers": "^0.5.6",
     "@ticket721/e712": "^0.4.1",
     "bn.js": "^5.1.2",
     "chai": "^4.2.0",
@@ -35,8 +36,7 @@
     "tslint-config-standard": "^9.0.0",
     "typechain": "^2.0.0",
     "typechain-target-truffle": "^1.0.2",
-    "typescript": "^3.9.5",
-    "@openzeppelin/test-helpers": "^0.5.6"
+    "typescript": "^3.9.5"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^2.5.1"
