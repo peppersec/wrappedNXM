@@ -52,7 +52,15 @@
             v-if="ethAccount"
             class="button is-primary"
             :disabled="clicked"
-            @click.prevent="validateBeforeSubmit"
+            @click.prevent="sendApprove"
+          >
+            Approve
+          </button>
+          <button
+            v-if="ethAccount"
+            class="button is-primary"
+            :disabled="clicked"
+            @click.prevent="unwrap"
           >
             UnWrap
           </button>
@@ -72,26 +80,36 @@
       <div v-if="ethAccount" class="info columns is-multiline">
         <div class="column">
           <p class="heading">
-            Network
-          </p>
-          <p class="title">
-            {{ networkName }}
-          </p>
-        </div>
-        <div class="column">
-          <p class="heading">
             NXM Balance
           </p>
           <p class="title">
-            {{ NXMbalance }} NXM
+            {{ NXMtokenBalance }} NXM
           </p>
         </div>
         <div class="column">
           <p class="heading">
-            Token Balance
+            wNXM Balance
           </p>
           <p class="title">
             {{ tokenBalance }} wNXM
+          </p>
+        </div>
+        <div class="column">
+          <p class="heading">
+            Can Wrap
+          </p>
+          <p class="title">
+            {{ canWrap.status ? "Yes": canWrap.status !== null ? "No" : "" }}
+            <span v-if="!canWrap.status && canWrap.status !== null" class="red">{{ canWrap.reason }}</span>
+          </p>
+        </div>
+        <div class="column">
+          <p class="heading">
+            Can UnWrap
+          </p>
+          <p class="title">
+            {{ canUnwrap.status ? "Yes": canUnwrap.status !== null ? "No" : "" }}
+            <span v-if="!canUnwrap.status && canUnwrap.status !== null" class="red">{{ canUnwrap.reason }}</span>
           </p>
         </div>
         <div class="column is-12">
@@ -136,6 +154,7 @@
 </template>
 
 <script>
+/* eslint-disable no-console */
 import Modal from '@/components/Modal'
 import { mapState, mapGetters, mapActions } from 'vuex'
 
@@ -143,7 +162,15 @@ export default {
   data() {
     return {
       amount: '',
-      clicked: false
+      clicked: false,
+      canWrap: {
+        status: null,
+        reason: ''
+      },
+      canUnwrap: {
+        status: null,
+        reason: ''
+      }
     }
   },
   computed: {
@@ -180,17 +207,46 @@ export default {
     }
   },
   watch: {
-    address(value) {
+    async address(value) {
+      // eslint-disable-next-line no-console
       this.$validator.validate('address', value)
+      if (value) {
+        const canWrap = await this.$store.dispatch('token/canWrap', { account: this.address, amount: this.amount })
+        this.canWrap = {
+          status: canWrap.isPassed,
+          reason: canWrap.reason
+        }
+        const canUnwrap = await this.$store.dispatch('token/canUnwrap', { recipient: this.address, amount: this.amount })
+        this.canUnwrap = {
+          status: canUnwrap.isPassed,
+          reason: canUnwrap.reason
+        }
+      }
     },
-    amount(value) {
+    async amount(value) {
       this.$validator.validate('amount', value)
+      if (this.address) {
+        const canWrap = await this.$store.dispatch('token/canWrap', { account: this.address, amount: this.amount })
+        this.canWrap = {
+          status: canWrap.isPassed,
+          reason: canWrap.reason
+        }
+
+        const canUnwrap = await this.$store.dispatch('token/canUnwrap', { recipient: this.address, amount: this.amount })
+        this.canUnwrap = {
+          status: canUnwrap.isPassed,
+          reason: canUnwrap.reason
+        }
+        console.log('canUnwrap', canUnwrap)
+      }
     }
   },
   created() {
     this.$validator.extend('valid_address', {
       getMessage: field => `The ${field} must be valid.`,
-      validate: () => !!this.isAddressValid
+      validate: () => {
+        return !!this.isAddressValid
+      }
     })
   },
   mounted() {
@@ -199,7 +255,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('token', ['wrapTokens']),
+    ...mapActions('token', ['wrapTokens', 'approve', 'unwrapTokens']),
     makeUrl(txHash) {
       const config = this.$store.getters['metamask/networkConfig']
       return `${config.explorerUrl.tx}/tx/${txHash}`
@@ -236,12 +292,34 @@ export default {
         })
         this.clicked = false
       })
+      this.clicked = false
     },
     unwrap() {
       this.clicked = true
       this.$validator.validateAll().then(async (result) => {
         if (result) {
           await this.unwrapTokens({ to: this.address, amount: this.amount })
+          this.$toast.open({
+            message: 'Success',
+            type: 'is-success',
+            position: 'is-top'
+          })
+          this.clicked = false
+          return
+        }
+        this.$toast.open({
+          message: 'Please check the fields.',
+          type: 'is-danger',
+          position: 'is-top'
+        })
+        this.clicked = false
+      })
+    },
+    sendApprove() {
+      this.clicked = true
+      this.$validator.validateAll().then(async (result) => {
+        if (result) {
+          await this.approve({ amount: this.amount })
           this.$toast.open({
             message: 'Success',
             type: 'is-success',

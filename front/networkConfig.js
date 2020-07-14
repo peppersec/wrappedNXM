@@ -15,6 +15,23 @@ const networkConfig = {
       'https://gasprice.poa.network/'
     ],
     smartContractPollTime: 15
+  },
+  netId42: {
+    verifyingContract: '0x80d4d07546D106727E4E6f024a564Eb51EA5a9e8',
+    NXM: '0xe70362E21233Bc8F9FB275d067875A0B3e61ACeA',
+    rpcCallRetryAttempt: 10,
+    currencyName: 'kETH',
+    explorerUrl: {
+      tx: 'https://kovan.etherscan.io'
+    },
+    networkName: 'Kovan',
+    rpcUrl: 'https://kovan.poa.network',
+    gasPrice: { fast: 21, low: 1, standard: 5 },
+    gasOracleUrls: [
+      'https://www.etherchain.org/api/gasPriceOracle',
+      'https://gasprice.poa.network/'
+    ],
+    smartContractPollTime: 15
   }
 }
 

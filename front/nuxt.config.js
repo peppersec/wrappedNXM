@@ -91,9 +91,9 @@ export default {
   loading: { color: '#fff' },
 
   // ...routerBase,
-  // router: {
-  //   base: '/erc20faucet/'
-  // },
+  router: {
+    base: '/wrappedNXM/'
+  },
 
   /*
   ** Global CSS
